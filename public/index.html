@@ -2306,6 +2306,11 @@
               esc(q.text) +
               "</div>" +
               mid +
+              (!isQ && s.q.explanation
+                ? '<section class="answer-explanation"><h2>Explanation</h2><p>' +
+                  esc(s.q.explanation) +
+                  "</p></section>"
+                : "") +
               '<div class="ctrls">' +
               endBtn +
               (isQ
@@ -2736,6 +2741,11 @@
                 '<div class="cells">' +
                 cells +
                 "</div>" +
+                (s.q.explanation
+                  ? '<section class="answer-explanation"><h2>Explanation</h2><p>' +
+                    esc(s.q.explanation) +
+                    "</p></section>"
+                  : "") +
                 you +
                 "</div>",
               key,
