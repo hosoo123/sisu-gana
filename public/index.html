@@ -1,0 +1,2771 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#F5F5F5" />
+    <title>SISU Live Quiz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap"
+    />
+    <style>
+      /* Layout: airy Finnish-classroom stage. Host = projector-scale centered stage; Play = full-height phone controller.
+   Neutral surfaces, near-black type, SISU yellow reserved for selection and primary actions. */
+      :root {
+        --bg: #f5f5f5;
+        --surface: #ffffff;
+        --surface-2: #fafaf8;
+        --ink: #181818;
+        --ink-2: #4a4945;
+        --ink-3: #8a8984;
+        --line: #e5e4df;
+        --line-2: #d3d2cc;
+        --yellow: #ffce01;
+        --yellow-soft: #fff5c7;
+        --yellow-ink: #181818;
+        --charcoal: #2f2e2e;
+        --ok: #2e9466;
+        --ok-soft: #e4f3eb;
+        --bad: #cf4459;
+        --bad-soft: #fbe8eb;
+        --silver: #deddd8;
+        --bronze: #eadbc6;
+        --shadow-1:
+          0 1px 2px rgba(24, 24, 24, 0.05), 0 2px 8px rgba(24, 24, 24, 0.05);
+        --shadow-2:
+          0 2px 4px rgba(24, 24, 24, 0.06), 0 10px 28px rgba(24, 24, 24, 0.09);
+        --r-sm: 12px;
+        --r-md: 18px;
+        --r-lg: 28px;
+        --f:
+          "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        --ease: cubic-bezier(0.45, 0, 0.55, 1); /* ease-in-out */
+        --fade: 240ms;
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--f);
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 3px solid var(--ink);
+        outline-offset: 3px;
+        border-radius: 10px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .wrap {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding-inline: clamp(16px, 3vw, 32px);
+        padding-block: 0 40px;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        text-wrap: balance;
+      }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink-3);
+      }
+      .note {
+        color: var(--ink-2);
+        font-weight: 300;
+      }
+      .err {
+        color: var(--bad);
+        font-weight: 500;
+      }
+      .center {
+        text-align: center;
+      }
+
+      /* header */
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding-block: 18px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        text-decoration: none;
+        color: var(--ink);
+      }
+      .brand svg {
+        height: 30px;
+        width: auto;
+        display: block;
+      }
+      .brand .sub {
+        font-weight: 300;
+        font-size: 15px;
+        color: var(--ink-2);
+        padding-left: 14px;
+        border-left: 1px solid var(--line-2);
+      }
+      .tabs {
+        display: flex;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px;
+        gap: 2px;
+        box-shadow: var(--shadow-1);
+      }
+      .tabs a {
+        text-decoration: none;
+        padding: 8px 22px;
+        border-radius: 999px;
+        font-weight: 500;
+        font-size: 15px;
+        color: var(--ink-2);
+        transition:
+          background var(--fade) var(--ease),
+          color var(--fade) var(--ease);
+      }
+      .tabs a:hover {
+        color: var(--ink);
+      }
+      .tabs a[aria-current="page"] {
+        background: var(--ink);
+        color: #fff;
+      }
+      .conn {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        z-index: 5;
+        background: var(--yellow-soft);
+        color: var(--ink);
+        border: 1px solid var(--yellow);
+        border-radius: var(--r-sm);
+        padding: 8px 14px;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: center;
+        margin-bottom: 12px;
+      }
+
+      /* buttons */
+      .btn {
+        border: 1px solid var(--line-2);
+        background: var(--surface);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 13px 26px;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: var(--shadow-1);
+        transition:
+          background var(--fade) var(--ease),
+          border-color var(--fade) var(--ease),
+          box-shadow var(--fade) var(--ease),
+          transform 120ms var(--ease);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+      .btn:hover {
+        border-color: var(--ink);
+        box-shadow: var(--shadow-2);
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn.primary {
+        background: var(--yellow);
+        border-color: var(--yellow);
+        color: var(--yellow-ink);
+      }
+      .btn.primary:hover {
+        background: #ffd833;
+        border-color: var(--ink);
+      }
+      .btn.dark {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: #fff;
+      }
+      .btn.ghost {
+        background: transparent;
+        box-shadow: none;
+      }
+      .btn.small {
+        padding: 7px 14px;
+        font-size: 14px;
+      }
+      .btn.icon {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+        border-color: var(--line-2);
+      }
+      .btn svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* screen fade (question transitions) */
+      .screen {
+        animation: fadeIn var(--fade) var(--ease) both;
+      }
+      .screen.leaving {
+        animation: fadeOut var(--fade) var(--ease) both;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes fadeOut {
+        from {
+          opacity: 1;
+          transform: none;
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-6px);
+        }
+      }
+
+      /* ===== answer cells (vector, 5 states) ===== */
+      .cells {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .cell {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        min-height: 84px;
+        padding: 14px 18px;
+        text-align: left;
+        background: var(--surface);
+        border: 1.5px solid var(--line);
+        border-radius: var(--r-md);
+        box-shadow: var(--shadow-1);
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 18px;
+        overflow-wrap: anywhere;
+        transition:
+          background-color var(--fade) var(--ease),
+          border-color var(--fade) var(--ease),
+          box-shadow var(--fade) var(--ease),
+          opacity var(--fade) var(--ease),
+          transform var(--fade) var(--ease);
+      }
+      .cell .mark {
+        flex: none;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: var(--bg);
+        display: grid;
+        place-items: center;
+        position: relative;
+        transition: background-color var(--fade) var(--ease);
+      }
+      .cell .mark svg {
+        width: 24px;
+        height: 24px;
+        fill: var(--charcoal);
+        transition: fill var(--fade) var(--ease);
+      }
+      .cell .key {
+        position: absolute;
+        right: -6px;
+        bottom: -6px;
+        width: 20px;
+        height: 20px;
+        border-radius: 7px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        font-size: 11px;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+        color: var(--ink-2);
+      }
+      .cell .txt {
+        flex: 1;
+        min-width: 0;
+      }
+      .cell .state {
+        flex: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        opacity: 0;
+        transform: scale(0.6);
+        transition:
+          opacity var(--fade) var(--ease),
+          transform var(--fade) var(--ease);
+      }
+      .cell .state svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      button.cell:hover:not(:disabled) {
+        border-color: var(--ink);
+        box-shadow: var(--shadow-2);
+        transform: translateY(-2px);
+      }
+      button.cell:disabled {
+        cursor: default;
+      }
+      .cell.selected {
+        background: var(--yellow-soft);
+        border-color: var(--yellow);
+        box-shadow:
+          0 0 0 3px rgba(255, 206, 1, 0.35),
+          var(--shadow-1);
+      }
+      .cell.selected .mark {
+        background: var(--yellow);
+      }
+      .cell.selected .mark svg {
+        fill: var(--ink);
+      }
+      .cell.correct {
+        background: var(--ok-soft);
+        border-color: var(--ok);
+      }
+      .cell.correct .mark {
+        background: var(--ok);
+      }
+      .cell.correct .mark svg {
+        fill: #fff;
+      }
+      .cell.correct .state {
+        background: var(--ok);
+        opacity: 1;
+        transform: none;
+      }
+      .cell.incorrect {
+        background: var(--bad-soft);
+        border-color: var(--bad);
+      }
+      .cell.incorrect .mark {
+        background: var(--bad);
+      }
+      .cell.incorrect .mark svg {
+        fill: #fff;
+      }
+      .cell.incorrect .state {
+        background: var(--bad);
+        opacity: 1;
+        transform: none;
+      }
+      .cell.muted {
+        opacity: 0.42;
+        box-shadow: none;
+      }
+      .cell.tap {
+        animation: tap 260ms var(--ease);
+      }
+      @keyframes tap {
+        0% {
+          opacity: 1;
+        }
+        40% {
+          opacity: 0.55;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      .cells.big .cell {
+        min-height: 110px;
+        font-size: clamp(20px, 2.2vw, 30px);
+        padding: 18px 24px;
+        border-radius: 22px;
+      }
+      .cells.big .cell .mark {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+      }
+      .cells.big .cell .mark svg {
+        width: 32px;
+        height: 32px;
+      }
+      .cells.big .cell .key {
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+      }
+      .cells.big .cell .state {
+        width: 40px;
+        height: 40px;
+      }
+      .cells.big .cell .state svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ===== editor ===== */
+      .ed-head {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-block: 8px 22px;
+      }
+      .title-in {
+        font-weight: 700;
+        font-size: clamp(26px, 3.4vw, 36px);
+        letter-spacing: -0.01em;
+        background: transparent;
+        border: 0;
+        border-bottom: 2px solid var(--line-2);
+        padding: 4px 2px;
+        min-width: 0;
+        width: min(640px, 100%);
+        transition: border-color var(--fade) var(--ease);
+      }
+      .title-in:focus {
+        outline: none;
+        border-bottom-color: var(--yellow);
+      }
+      .qlist {
+        display: grid;
+        gap: 16px;
+      }
+      .qcard {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 20px;
+        display: grid;
+        gap: 14px;
+        box-shadow: var(--shadow-1);
+        transition: border-color var(--fade) var(--ease);
+      }
+      .qcard.bad {
+        border-color: #edb4bd;
+      }
+      .qtop {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .qnum {
+        font-weight: 700;
+        font-size: 15px;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 999px;
+        min-width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        padding: 0 10px;
+      }
+      .qtop .spacer {
+        flex: 1;
+      }
+      .field {
+        width: 100%;
+        font-size: 19px;
+        font-weight: 500;
+        padding: 13px 16px;
+        border-radius: var(--r-sm);
+        border: 1.5px solid var(--line);
+        background: var(--surface-2);
+        transition:
+          border-color var(--fade) var(--ease),
+          background var(--fade) var(--ease);
+      }
+      .field:focus {
+        outline: none;
+        border-color: var(--ink);
+        background: #fff;
+      }
+      .opts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .opt {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1.5px solid var(--line);
+        border-radius: var(--r-sm);
+        padding: 6px 8px 6px 8px;
+        background: var(--surface-2);
+        transition:
+          border-color var(--fade) var(--ease),
+          background var(--fade) var(--ease);
+      }
+      .opt.is-correct {
+        border-color: var(--ok);
+        background: var(--ok-soft);
+      }
+      .opt .mk {
+        flex: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--bg);
+        display: grid;
+        place-items: center;
+      }
+      .opt.is-correct .mk {
+        background: var(--ok);
+      }
+      .opt .mk svg {
+        width: 18px;
+        height: 18px;
+        fill: var(--charcoal);
+      }
+      .opt.is-correct .mk svg {
+        fill: #fff;
+      }
+      .opt input[type="text"] {
+        flex: 1;
+        min-width: 0;
+        border: 0;
+        background: transparent;
+        padding: 8px 4px;
+        font-weight: 500;
+      }
+      .opt input[type="text"]:focus {
+        outline: none;
+      }
+      .opt label.corr {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink-2);
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .opt input[type="radio"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--ok);
+        margin: 0;
+      }
+      .opt .x {
+        border: 0;
+        background: transparent;
+        border-radius: 8px;
+        width: 30px;
+        height: 30px;
+        color: var(--ink-3);
+        font-size: 20px;
+        line-height: 1;
+      }
+      .opt .x:hover {
+        background: var(--bad-soft);
+        color: var(--bad);
+      }
+      .qfoot {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .qfoot select {
+        background: var(--surface);
+        border: 1.5px solid var(--line);
+        border-radius: 10px;
+        padding: 6px 10px;
+        font-weight: 500;
+      }
+      .qwarn {
+        font-size: 14px;
+        color: var(--bad);
+      }
+      .ed-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+        align-items: center;
+      }
+      .pin-in {
+        background: var(--surface);
+        border: 1.5px solid var(--line);
+        border-radius: 999px;
+        padding: 12px 16px;
+        width: 150px;
+        font-weight: 500;
+      }
+      .file-btn {
+        position: relative;
+        overflow: hidden;
+      }
+      .file-btn input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      /* ===== host stage ===== */
+      .stage {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .stage-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .pill {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-weight: 500;
+        font-size: 15px;
+        box-shadow: var(--shadow-1);
+      }
+      .pill b {
+        font-weight: 700;
+      }
+      .lobby {
+        display: grid;
+        grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+        gap: 24px;
+        align-items: start;
+      }
+      .codebox {
+        background: var(--surface);
+        border-radius: var(--r-lg);
+        padding: 28px;
+        text-align: center;
+        box-shadow: var(--shadow-2);
+        border: 1px solid var(--line);
+      }
+      .codebox .code {
+        font-weight: 800;
+        font-size: clamp(60px, 8vw, 112px);
+        letter-spacing: 0.08em;
+        line-height: 1;
+        margin-top: 4px;
+      }
+      .codebox .code span {
+        display: inline-block;
+        border-bottom: 6px solid var(--yellow);
+        padding-bottom: 4px;
+      }
+      .joinurl {
+        font-weight: 600;
+        font-size: clamp(18px, 2vw, 26px);
+        overflow-wrap: anywhere;
+        margin-top: 4px;
+      }
+      .qr {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 12px;
+        display: inline-block;
+        margin-top: 18px;
+      }
+      .qr img,
+      .qr canvas {
+        display: block;
+        width: 170px;
+        height: 170px;
+      }
+      .roster {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 24px;
+        min-height: 280px;
+        box-shadow: var(--shadow-1);
+      }
+      .roster h2 {
+        font-size: 30px;
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+      }
+      .roster h2 .n {
+        background: var(--yellow);
+        border-radius: 12px;
+        padding: 0 12px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .chip {
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 8px 8px 8px 18px;
+        font-weight: 600;
+        font-size: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        animation: fadeIn var(--fade) var(--ease) both;
+      }
+      .chip button {
+        border: 0;
+        background: transparent;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        color: var(--ink-3);
+        font-size: 18px;
+        line-height: 1;
+      }
+      .chip button:hover {
+        background: var(--bad-soft);
+        color: var(--bad);
+      }
+      .waiting {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 18px;
+        font-size: 20px;
+      }
+      .dots3 {
+        display: inline-flex;
+        gap: 5px;
+      }
+      .dots3 i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--ink-3);
+        animation: blink 1.2s var(--ease) infinite;
+      }
+      .dots3 i:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .dots3 i:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes blink {
+        0%,
+        80%,
+        100% {
+          opacity: 0.25;
+        }
+        40% {
+          opacity: 1;
+        }
+      }
+      .qbig {
+        font-weight: 700;
+        font-size: clamp(28px, 3.8vw, 54px);
+        line-height: 1.15;
+        text-align: center;
+        letter-spacing: -0.015em;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 30px 32px;
+        box-shadow: var(--shadow-1);
+        text-wrap: balance;
+      }
+      .qmid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+      }
+      .ring {
+        width: 118px;
+        height: 118px;
+        flex: none;
+        position: relative;
+      }
+      .ring svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+      }
+      .ring circle {
+        fill: none;
+        stroke-width: 9;
+      }
+      .ring .trk {
+        stroke: var(--line);
+      }
+      .ring .val {
+        stroke: var(--yellow);
+        stroke-linecap: round;
+        transition: stroke-dashoffset 200ms linear;
+      }
+      .ring span {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 40px;
+      }
+      .answered {
+        text-align: center;
+      }
+      .answered b {
+        font-weight: 800;
+        font-size: 52px;
+        display: block;
+        line-height: 1;
+      }
+      .bars {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: clamp(14px, 3vw, 44px);
+        height: 230px;
+      }
+      .barcol {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: clamp(64px, 9vw, 120px);
+        height: 100%;
+        justify-content: flex-end;
+        transition: opacity var(--fade) var(--ease);
+      }
+      .barcol .cnt {
+        font-weight: 700;
+        font-size: 28px;
+      }
+      .barcol .bar {
+        width: 100%;
+        border-radius: 14px 14px 6px 6px;
+        min-height: 12px;
+        background: var(--line-2);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 10px;
+        animation: grow 600ms var(--ease) both;
+        transform-origin: bottom;
+      }
+      .barcol .bar svg {
+        width: 24px;
+        height: 24px;
+        fill: var(--charcoal);
+      }
+      .barcol.win .bar {
+        background: var(--ok);
+      }
+      .barcol.win .bar svg {
+        fill: #fff;
+      }
+      .barcol.dim {
+        opacity: 0.55;
+      }
+      @keyframes grow {
+        from {
+          transform: scaleY(0.05);
+        }
+        to {
+          transform: none;
+        }
+      }
+      .ctrls {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        margin-top: auto;
+      }
+      .board {
+        max-width: 880px;
+        width: 100%;
+        margin: 0 auto;
+        display: grid;
+        gap: 10px;
+      }
+      .brow {
+        display: grid;
+        grid-template-columns: 52px minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: center;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 14px 22px;
+        font-size: 24px;
+        font-weight: 600;
+        box-shadow: var(--shadow-1);
+        animation: fadeIn var(--fade) var(--ease) both;
+      }
+      .brow .rk {
+        font-weight: 800;
+        font-size: 26px;
+        text-align: center;
+        color: var(--ink-3);
+      }
+      .brow .nm {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .brow .sc {
+        font-weight: 700;
+      }
+      .brow .gain {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--ok);
+        margin-left: 10px;
+      }
+      .brow.top {
+        border-color: var(--yellow);
+        box-shadow:
+          0 0 0 3px rgba(255, 206, 1, 0.3),
+          var(--shadow-1);
+      }
+      .brow.top .rk {
+        color: var(--ink);
+      }
+      .podium {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: clamp(10px, 2vw, 26px);
+        margin-top: 16px;
+      }
+      .pod {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: clamp(104px, 19vw, 250px);
+      }
+      .pod .who {
+        font-weight: 700;
+        font-size: clamp(18px, 2.6vw, 34px);
+        text-align: center;
+        overflow-wrap: anywhere;
+      }
+      .pod .pts {
+        font-weight: 400;
+        font-size: 18px;
+        color: var(--ink-2);
+      }
+      .pod .block {
+        width: 100%;
+        border-radius: 20px 20px 8px 8px;
+        display: grid;
+        place-items: start center;
+        padding-top: 14px;
+        font-weight: 800;
+        font-size: 56px;
+        color: var(--ink);
+        box-shadow: var(--shadow-1);
+        animation: rise 600ms var(--ease) both;
+        transform-origin: bottom;
+      }
+      .pod.p1 .block {
+        height: 250px;
+        background: var(--yellow);
+        animation-delay: 500ms;
+      }
+      .pod.p2 .block {
+        height: 180px;
+        background: var(--silver);
+        animation-delay: 250ms;
+      }
+      .pod.p3 .block {
+        height: 130px;
+        background: var(--bronze);
+      }
+      @keyframes rise {
+        from {
+          transform: scaleY(0.08);
+          opacity: 0;
+        }
+        to {
+          transform: none;
+          opacity: 1;
+        }
+      }
+      .rest {
+        max-width: 680px;
+        margin: 28px auto 0;
+        display: grid;
+        gap: 8px;
+      }
+      .rest .brow {
+        font-size: 18px;
+        padding: 10px 18px;
+      }
+      .rest .brow .rk {
+        font-size: 20px;
+      }
+
+      /* ===== player ===== */
+      .play {
+        max-width: 520px;
+        margin: 0 auto;
+        min-height: calc(100vh - 120px);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .join {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 28px 24px;
+        display: grid;
+        gap: 12px;
+        margin-top: 6vh;
+        box-shadow: var(--shadow-2);
+      }
+      .join h1 {
+        font-size: 30px;
+        text-align: center;
+      }
+      .join .lede {
+        text-align: center;
+        margin: -4px 0 6px;
+      }
+      .join label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink-2);
+        margin-top: 4px;
+      }
+      .join input {
+        width: 100%;
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+        border: 1.5px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 14px;
+        background: var(--surface-2);
+        color: var(--ink);
+        transition:
+          border-color var(--fade) var(--ease),
+          background var(--fade) var(--ease);
+      }
+      .join input:focus {
+        border-color: var(--ink);
+        background: #fff;
+        outline: none;
+      }
+      .join #pcode {
+        letter-spacing: 0.3em;
+        font-weight: 700;
+      }
+      .join .btn {
+        width: 100%;
+        font-size: 18px;
+        margin-top: 6px;
+        padding: 15px;
+      }
+      .footlink {
+        text-align: center;
+        font-size: 14px;
+        color: var(--ink-3);
+        font-weight: 300;
+      }
+      .footlink a {
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .pstatus {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 10px;
+        padding: 16px 0;
+      }
+      .pstatus h2 {
+        font-size: 30px;
+      }
+      .pstatus .big {
+        font-weight: 800;
+        font-size: 56px;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+      }
+      .badge {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 40px;
+        color: #fff;
+        box-shadow: var(--shadow-2);
+      }
+      .badge svg {
+        width: 42px;
+        height: 42px;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .badge.ok {
+        background: var(--ok);
+      }
+      .badge.bad {
+        background: var(--bad);
+      }
+      .badge.none {
+        background: var(--ink-3);
+      }
+      .badge.rank {
+        background: var(--surface);
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+      .badge.rank.r1 {
+        background: var(--yellow);
+        border-color: var(--yellow);
+      }
+      .badge.rank.r2 {
+        background: var(--silver);
+      }
+      .badge.rank.r3 {
+        background: var(--bronze);
+      }
+      .phead {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .phead .t {
+        background: var(--ink);
+        color: #fff;
+        border-radius: 999px;
+        padding: 3px 12px;
+        min-width: 56px;
+        text-align: center;
+      }
+      .ptimer {
+        height: 8px;
+        border-radius: 999px;
+        background: var(--line);
+        overflow: hidden;
+      }
+      .ptimer i {
+        display: block;
+        height: 100%;
+        background: var(--yellow);
+        border-radius: 999px;
+        transition: width 0.2s linear;
+      }
+      .pq {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 18px;
+        font-size: 20px;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: var(--shadow-1);
+        text-wrap: balance;
+      }
+      .lockmsg {
+        text-align: center;
+        margin: 0;
+        font-weight: 600;
+        font-size: 16px;
+        min-height: 24px;
+        color: var(--ink-2);
+        transition: opacity var(--fade) var(--ease);
+      }
+      .play .cells {
+        grid-template-columns: 1fr;
+        flex: 1;
+        align-content: start;
+      }
+      .play .cell {
+        min-height: 72px;
+        font-size: 18px;
+      }
+      .result-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        width: 100%;
+      }
+      .result-meta div {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 12px;
+        box-shadow: var(--shadow-1);
+      }
+      .result-meta b {
+        display: block;
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .result-meta span {
+        font-size: 13px;
+        color: var(--ink-3);
+      }
+      .youbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 600;
+        box-shadow: var(--shadow-1);
+      }
+      .youbar .sc {
+        font-weight: 700;
+      }
+
+      @media (max-width: 860px) {
+        .lobby {
+          grid-template-columns: 1fr;
+        }
+        .cells,
+        .opts {
+          grid-template-columns: 1fr;
+        }
+        .brow {
+          font-size: 18px;
+          grid-template-columns: 36px minmax(0, 1fr) auto;
+          padding: 12px 16px;
+        }
+        .ring {
+          width: 88px;
+          height: 88px;
+        }
+        .ring span {
+          font-size: 30px;
+        }
+        .pod .block {
+          font-size: 36px;
+        }
+        .pod.p1 .block {
+          height: 160px;
+        }
+        .pod.p2 .block {
+          height: 116px;
+        }
+        .pod.p3 .block {
+          height: 84px;
+        }
+        .brand .sub {
+          display: none;
+        }
+      }
+      @media (max-width: 520px) {
+        .bar {
+          flex-wrap: nowrap;
+          padding-block: 12px;
+        }
+        .brand svg {
+          height: 22px;
+        }
+        .tabs a {
+          padding: 6px 14px;
+          font-size: 14px;
+        }
+        .play {
+          min-height: calc(100vh - 90px);
+        }
+        .join {
+          margin-top: 3vh;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 1ms !important;
+          animation-delay: 0ms !important;
+          transition-duration: 1ms !important;
+        }
+        button.cell:hover:not(:disabled) {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="bar">
+        <a
+          class="brand"
+          href="/index.html?mode=play"
+          aria-label="SISU Schools quiz home"
+        >
+          <!-- SISU Schools wordmark, drawn as vector text: bold SISU with the yellow S, light "Schools" -->
+          <svg viewBox="0 0 296 46" role="img" aria-label="SISU Schools">
+            <text
+              x="0"
+              y="36"
+              font-family="Poppins, sans-serif"
+              font-size="38"
+              fill="#181818"
+            >
+              <tspan font-weight="800">SI</tspan>
+              <tspan font-weight="800" fill="#FFCD2C" rotate="-8">S</tspan>
+              <tspan font-weight="800">U</tspan>
+              <tspan font-weight="300" dx="9">Schools</tspan>
+              <tspan font-weight="400" font-size="13" dx="3" dy="-22">®</tspan>
+            </text>
+          </svg>
+          <span class="sub">Live Quiz</span>
+        </a>
+        <nav class="tabs" aria-label="View">
+          <a id="tab-host" href="/index.html?mode=host">Host</a>
+          <a id="tab-play" href="/index.html?mode=play">Play</a>
+        </nav>
+      </header>
+      <div id="conn" class="conn" role="status" hidden>
+        Connection lost. Reconnecting…
+      </div>
+      <main id="app" aria-live="polite"></main>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+      /* SISU Live Quiz client — host and player screens.
+   Game logic is unchanged from Buzzline; this file only changes how it looks and moves. */
+      (function () {
+        "use strict";
+
+        /* ---------------- helpers ---------------- */
+        // Vector marks for the four answer cells (triangle, diamond, circle, square).
+        const SH = [
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 21.6 19.8H2.4z"/></svg>',
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12z"/></svg>',
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.6"/></svg>',
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>',
+        ];
+        const ICON = {
+          check:
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7"/></svg>',
+          cross:
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6 18 18M18 6 6 18"/></svg>',
+          dash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12h12"/></svg>',
+          up: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+          down: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+        };
+        const LETTERS = ["A", "B", "C", "D"];
+        // One answer cell. state: "" | "selected" | "correct" | "incorrect" | "muted"
+        function cell(j, text, state, asButton, disabled) {
+          const tag = asButton ? "button" : "div";
+          const st = state === "incorrect" ? ICON.cross : ICON.check;
+          return (
+            "<" +
+            tag +
+            ' class="cell ' +
+            (state || "") +
+            '"' +
+            (asButton
+              ? ' type="button" data-c="' +
+                j +
+                '"' +
+                (disabled ? " disabled" : "")
+              : "") +
+            ' aria-label="' +
+            LETTERS[j] +
+            ": " +
+            esc(text) +
+            (state === "correct"
+              ? " (correct)"
+              : state === "incorrect"
+                ? " (incorrect)"
+                : state === "selected"
+                  ? " (your answer)"
+                  : "") +
+            '">' +
+            '<span class="mark">' +
+            SH[j] +
+            '<span class="key">' +
+            LETTERS[j] +
+            "</span></span>" +
+            '<span class="txt">' +
+            esc(text) +
+            "</span>" +
+            '<span class="state">' +
+            st +
+            "</span></" +
+            tag +
+            ">"
+          );
+        }
+        const esc = (s) =>
+          String(s == null ? "" : s).replace(
+            /[&<>"']/g,
+            (c) =>
+              ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;",
+              })[c],
+          );
+        const $ = (id) => document.getElementById(id);
+        const ord = (n) => {
+          const s = ["th", "st", "nd", "rd"],
+            v = n % 100;
+          return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        };
+        const TIMES = [5, 10, 15, 20, 30, 45, 60, 90, 120];
+        // Storage can be blocked (private modes, strict settings): fall back to memory so the page still works.
+        const memStore = () => {
+          const m = {};
+          return {
+            getItem: (k) => (k in m ? m[k] : null),
+            setItem: (k, v) => {
+              m[k] = String(v);
+            },
+            removeItem: (k) => {
+              delete m[k];
+            },
+          };
+        };
+        const LS = (() => {
+          try {
+            const s = window.localStorage;
+            s.getItem("x");
+            return s;
+          } catch (e) {
+            return memStore();
+          }
+        })();
+        const SS = (() => {
+          try {
+            const s = window.sessionStorage;
+            s.getItem("x");
+            return s;
+          } catch (e) {
+            return memStore();
+          }
+        })();
+        const store = {
+          get(k, d, s) {
+            try {
+              const v = (s || LS).getItem(k);
+              return v == null ? d : JSON.parse(v);
+            } catch (e) {
+              return d;
+            }
+          },
+          set(k, v, s) {
+            try {
+              (s || LS).setItem(k, JSON.stringify(v));
+            } catch (e) {}
+          },
+          del(k, s) {
+            try {
+              (s || LS).removeItem(k);
+            } catch (e) {}
+          },
+        };
+        const reduceMotion = () =>
+          window.matchMedia &&
+          matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const FADE_MS = 240;
+
+        const isHost =
+          new URLSearchParams(location.search).get("mode") === "host";
+        $(isHost ? "tab-host" : "tab-play").setAttribute(
+          "aria-current",
+          "page",
+        );
+        const app = $("app");
+
+        /* Screen swapper: when the screen key changes (new phase or question), fade the
+     current screen out and the next one in. Same-key updates replace in place. */
+        let curKey = null,
+          swapTimer = null,
+          pending = null;
+        function show(html, key, after) {
+          const place = () => {
+            app.innerHTML = '<div class="screen">' + html + "</div>";
+            if (after) after();
+          };
+          if (key === curKey && !swapTimer) {
+            // same screen: replace without re-running the entrance animation
+            app.innerHTML =
+              '<div class="screen" style="animation:none">' + html + "</div>";
+            if (after) after();
+            return;
+          }
+          curKey = key;
+          pending = place;
+          if (swapTimer) return; // a fade-out is already running; the latest screen wins
+          const old = app.firstElementChild;
+          if (!old || reduceMotion()) {
+            pending = null;
+            return place();
+          }
+          old.classList.add("leaving");
+          swapTimer = setTimeout(() => {
+            swapTimer = null;
+            const p = pending;
+            pending = null;
+            if (p) p();
+          }, FADE_MS);
+        }
+
+        const socket = io({ transports: ["websocket", "polling"] });
+        socket.on("connect", () => {
+          $("conn").hidden = true;
+          isHost ? hostOnConnect() : playerOnConnect();
+        });
+        socket.on("disconnect", () => {
+          $("conn").hidden = false;
+        });
+
+        /* =====================================================================
+     HOST
+     ===================================================================== */
+        let qid = 1;
+        const nid = () => "q" + Date.now().toString(36) + qid++;
+        const SAMPLE = {
+          title: "Planet Earth Warm-up",
+          questions: [
+            {
+              text: "Which is the largest ocean on Earth?",
+              options: ["Atlantic", "Indian", "Pacific", "Arctic"],
+              correct: 2,
+              time: 20,
+            },
+            {
+              text: "How many continents are there?",
+              options: ["5", "6", "7", "8"],
+              correct: 2,
+              time: 15,
+            },
+            {
+              text: "Mount Everest sits on the border of Nepal and which country?",
+              options: ["India", "China", "Bhutan", "Pakistan"],
+              correct: 1,
+              time: 20,
+            },
+            {
+              text: "The Sahara is the largest hot desert in the world.",
+              options: ["True", "False"],
+              correct: 0,
+              time: 10,
+            },
+            {
+              text: "Which river flows through Ulaanbaatar?",
+              options: ["Selenge", "Orkhon", "Kherlen", "Tuul"],
+              correct: 3,
+              time: 20,
+            },
+          ],
+        };
+        function normalizeQuiz(d) {
+          if (!d || !Array.isArray(d.questions)) return null;
+          return {
+            title: String(d.title || "My quiz").slice(0, 80),
+            questions: d.questions.slice(0, 100).map((q) => ({
+              id: nid(),
+              text: String(q.text || "").slice(0, 160),
+              options: (Array.isArray(q.options) && q.options.length >= 2
+                ? q.options
+                : ["", ""]
+              )
+                .slice(0, 4)
+                .map((o) => String(o || "").slice(0, 60)),
+              correct: Number.isInteger(q.correct) ? q.correct : 0,
+              time: TIMES.includes(q.time) ? q.time : 20,
+            })),
+          };
+        }
+        const H = {
+          quiz: null,
+          isSample: true,
+          err: "",
+          pinRequired: false,
+          pin: store.get("buzzline-pin", "", SS),
+          session: store.get("buzzline-host", null, SS),
+          st: null,
+          deadline: 0,
+          creating: false,
+        };
+
+        function hostInit() {
+          const saved = normalizeQuiz(store.get("buzzline-quiz", null));
+          if (saved && saved.questions.length) {
+            H.quiz = saved;
+            H.isSample = false;
+          } else H.quiz = normalizeQuiz(SAMPLE);
+          fetch("/config")
+            .then((r) => r.json())
+            .then((c) => {
+              H.pinRequired = !!c.pinRequired;
+              if (!H.st) renderEditor();
+            })
+            .catch(() => {});
+          renderHost();
+          setInterval(hostTick, 200);
+        }
+        function hostOnConnect() {
+          if (H.session) {
+            socket.emit("host:resume", H.session, (r) => {
+              if (!r || !r.ok) {
+                H.session = null;
+                H.st = null;
+                store.del("buzzline-host", SS);
+                renderHost();
+              }
+            });
+          }
+        }
+        socket.on("host:state", (s) => {
+          if (!isHost) return;
+          const prev = H.st;
+          H.st = s;
+          if (s.phase === "question") H.deadline = Date.now() + (s.rem || 0);
+          // During a question only the answered counter changes; update it in place.
+          if (
+            prev &&
+            prev.phase === "question" &&
+            s.phase === "question" &&
+            prev.qi === s.qi
+          ) {
+            const a = $("h-answered"),
+              o = $("h-online");
+            if (a) a.textContent = s.answered;
+            if (o) o.textContent = s.online;
+            return;
+          }
+          renderHost();
+        });
+        socket.on("host:replaced", () => {
+          if (!isHost) return;
+          H.session = null;
+          H.st = null;
+          store.del("buzzline-host", SS);
+          H.err = "This game is now being run from another window.";
+          renderHost();
+        });
+
+        const saveQuiz = () => {
+          H.isSample = false;
+          store.set(
+            "buzzline-quiz",
+            H.quiz.questions.length
+              ? { title: H.quiz.title, questions: H.quiz.questions }
+              : null,
+          );
+        };
+        function qProblems(q) {
+          const p = [];
+          if (!q.text.trim()) p.push("Add question text.");
+          if (q.options.some((o) => !o.trim()))
+            p.push("Fill in every answer or remove empty ones.");
+          if (!q.options[q.correct] || !q.options[q.correct].trim())
+            p.push("Pick the correct answer.");
+          return p;
+        }
+        const quizOk = () =>
+          H.quiz.questions.length > 0 &&
+          H.quiz.questions.every((q) => !qProblems(q).length);
+
+        function renderHost() {
+          if (!H.st) renderEditor();
+          else renderStage();
+        }
+
+        function renderEditor() {
+          const qs = H.quiz.questions
+            .map((q, i) => {
+              const probs = qProblems(q);
+              const opts = q.options
+                .map(
+                  (o, j) =>
+                    '<div class="opt' +
+                    (q.correct === j ? " is-correct" : "") +
+                    '"><span class="mk">' +
+                    SH[j] +
+                    "</span>" +
+                    '<input type="text" id="o-' +
+                    q.id +
+                    "-" +
+                    j +
+                    '" data-i="' +
+                    i +
+                    '" data-j="' +
+                    j +
+                    '" data-k="opt" maxlength="60" placeholder="Answer ' +
+                    LETTERS[j] +
+                    '" value="' +
+                    esc(o) +
+                    '" aria-label="Answer ' +
+                    LETTERS[j] +
+                    '">' +
+                    '<label class="corr"><input type="radio" name="c-' +
+                    q.id +
+                    '" data-i="' +
+                    i +
+                    '" data-j="' +
+                    j +
+                    '" data-k="corr"' +
+                    (q.correct === j ? " checked" : "") +
+                    ">Correct</label>" +
+                    (q.options.length > 2
+                      ? '<button class="x" data-a="delopt" data-i="' +
+                        i +
+                        '" data-j="' +
+                        j +
+                        '" aria-label="Remove answer ' +
+                        LETTERS[j] +
+                        '">×</button>'
+                      : "") +
+                    "</div>",
+                )
+                .join("");
+              return (
+                '<div class="qcard' +
+                (probs.length ? " bad" : "") +
+                '">' +
+                '<div class="qtop"><span class="qnum">' +
+                (i + 1) +
+                '</span><span class="spacer"></span>' +
+                '<button class="btn small icon ghost" data-a="up" data-i="' +
+                i +
+                '"' +
+                (i === 0 ? " disabled" : "") +
+                ' aria-label="Move up">' +
+                ICON.up +
+                "</button>" +
+                '<button class="btn small icon ghost" data-a="down" data-i="' +
+                i +
+                '"' +
+                (i === H.quiz.questions.length - 1 ? " disabled" : "") +
+                ' aria-label="Move down">' +
+                ICON.down +
+                "</button>" +
+                '<button class="btn small ghost" data-a="dup" data-i="' +
+                i +
+                '">Duplicate</button>' +
+                '<button class="btn small ghost" data-a="del" data-i="' +
+                i +
+                '">Delete</button></div>' +
+                '<input class="field" type="text" id="t-' +
+                q.id +
+                '" data-i="' +
+                i +
+                '" data-k="text" maxlength="160" placeholder="Type your question" value="' +
+                esc(q.text) +
+                '" aria-label="Question ' +
+                (i + 1) +
+                '">' +
+                '<div class="opts">' +
+                opts +
+                "</div>" +
+                '<div class="qfoot">' +
+                (q.options.length < 4
+                  ? '<button class="btn small" data-a="addopt" data-i="' +
+                    i +
+                    '">+ Answer</button>'
+                  : "") +
+                '<label class="note">Time limit <select id="tm-' +
+                q.id +
+                '" data-i="' +
+                i +
+                '" data-k="time">' +
+                TIMES.map(
+                  (t) =>
+                    '<option value="' +
+                    t +
+                    '"' +
+                    (q.time === t ? " selected" : "") +
+                    ">" +
+                    t +
+                    " s</option>",
+                ).join("") +
+                "</select></label>" +
+                '<span class="qwarn">' +
+                esc(probs.join(" ")) +
+                "</span></div></div>"
+              );
+            })
+            .join("");
+          const html =
+            '<div class="ed-head"><div style="min-width:0;flex:1"><div class="eyebrow">' +
+            (H.isSample
+              ? "Sample quiz · edit it or replace it"
+              : "Your quiz · saved in this browser") +
+            "</div>" +
+            '<input class="title-in" id="qtitle" data-k="title" maxlength="80" value="' +
+            esc(H.quiz.title) +
+            '" aria-label="Quiz title"></div>' +
+            '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
+            (H.pinRequired
+              ? '<input class="pin-in" id="hpin" type="password" placeholder="Host PIN" autocomplete="off" value="' +
+                esc(H.pin) +
+                '" aria-label="Host PIN">'
+              : "") +
+            '<button class="btn primary" data-a="start"' +
+            (quizOk() && !H.creating ? "" : " disabled") +
+            ">Start game</button></div></div>" +
+            (H.err ? '<p class="err">' + esc(H.err) + "</p>" : "") +
+            '<div class="qlist">' +
+            qs +
+            "</div>" +
+            '<div class="ed-actions"><button class="btn dark" data-a="add">+ Add question</button>' +
+            '<button class="btn ghost" data-a="export">Export quiz</button>' +
+            '<label class="btn ghost file-btn">Import quiz<input type="file" id="importfile" accept=".json,application/json"></label>' +
+            '<span class="note">' +
+            H.quiz.questions.length +
+            " question" +
+            (H.quiz.questions.length === 1 ? "" : "s") +
+            (quizOk() ? "" : " · fix the highlighted questions to start") +
+            "</span></div>";
+          show(html, "editor", () => {
+            const f = $("importfile");
+            if (f) f.onchange = importQuiz;
+          });
+        }
+        function refreshValidity() {
+          const cards = document.querySelectorAll(".qcard");
+          H.quiz.questions.forEach((q, i) => {
+            const c = cards[i];
+            if (!c) return;
+            const p = qProblems(q);
+            c.classList.toggle("bad", !!p.length);
+            const w = c.querySelector(".qwarn");
+            if (w) w.textContent = p.join(" ");
+          });
+          const b = document.querySelector('[data-a="start"]');
+          if (b) b.disabled = !quizOk() || H.creating;
+        }
+        function exportQuiz() {
+          const data = {
+            title: H.quiz.title,
+            questions: H.quiz.questions.map(
+              ({ text, options, correct, time }) => ({
+                text,
+                options,
+                correct,
+                time,
+              }),
+            ),
+          };
+          const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+          });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download =
+            (H.quiz.title || "quiz")
+              .replace(/[^\w\- ]+/g, "")
+              .trim()
+              .replace(/\s+/g, "-")
+              .toLowerCase() + ".json";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        }
+        function importQuiz(e) {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          file
+            .text()
+            .then((t) => {
+              const q = normalizeQuiz(JSON.parse(t));
+              if (!q || !q.questions.length) throw new Error();
+              H.quiz = q;
+              H.err = "";
+              saveQuiz();
+              renderEditor();
+            })
+            .catch(() => {
+              H.err = "That file isn't a quiz export from this app.";
+              renderEditor();
+            });
+        }
+
+        function startGame() {
+          if (!quizOk() || H.creating) return;
+          if (!socket.connected) {
+            H.err = "Not connected to the server yet. Try again in a moment.";
+            return renderEditor();
+          }
+          const pinEl = $("hpin");
+          if (pinEl) {
+            H.pin = pinEl.value;
+            store.set("buzzline-pin", H.pin, SS);
+          }
+          H.creating = true;
+          H.err = "";
+          refreshValidity();
+          socket.emit("host:create", { quiz: H.quiz, pin: H.pin }, (r) => {
+            H.creating = false;
+            if (!r || !r.ok) {
+              H.err =
+                r && r.err === "pin"
+                  ? "That host PIN is wrong."
+                  : (r && r.err) || "Could not start a game.";
+              return renderEditor();
+            }
+            H.session = { code: r.code, hostKey: r.hostKey };
+            store.set("buzzline-host", H.session, SS);
+          });
+        }
+        const act = (action, extra) =>
+          socket.emit("host:action", Object.assign({ action }, extra || {}));
+
+        app.addEventListener("input", (e) => {
+          if (!isHost || H.st) return;
+          const t = e.target,
+            k = t.dataset.k,
+            i = +t.dataset.i;
+          if (k === "title") H.quiz.title = t.value.slice(0, 80);
+          else if (k === "text") H.quiz.questions[i].text = t.value;
+          else if (k === "opt")
+            H.quiz.questions[i].options[+t.dataset.j] = t.value;
+          else return;
+          saveQuiz();
+          refreshValidity();
+        });
+        app.addEventListener("change", (e) => {
+          if (!isHost || H.st) return;
+          const t = e.target,
+            k = t.dataset.k,
+            i = +t.dataset.i;
+          if (k === "corr") {
+            H.quiz.questions[i].correct = +t.dataset.j;
+            saveQuiz();
+            renderEditor();
+          } else if (k === "time") {
+            H.quiz.questions[i].time = +t.value;
+            saveQuiz();
+          }
+        });
+        app.addEventListener("click", (e) => {
+          if (!isHost) return;
+          const b = e.target.closest("[data-a]");
+          if (!b) return;
+          const a = b.dataset.a,
+            i = +b.dataset.i,
+            qs = H.quiz && H.quiz.questions;
+          const edit = () => {
+            saveQuiz();
+            renderEditor();
+          };
+          switch (a) {
+            case "add":
+              qs.push({
+                id: nid(),
+                text: "",
+                options: ["", "", "", ""],
+                correct: 0,
+                time: 20,
+              });
+              edit();
+              setTimeout(() => {
+                const ins = document.querySelectorAll(".qcard .field");
+                ins.length && ins[ins.length - 1].focus();
+              }, 0);
+              return;
+            case "del":
+              qs.splice(i, 1);
+              return edit();
+            case "dup":
+              qs.splice(
+                i + 1,
+                0,
+                Object.assign(JSON.parse(JSON.stringify(qs[i])), { id: nid() }),
+              );
+              return edit();
+            case "up":
+              if (i > 0) [qs[i - 1], qs[i]] = [qs[i], qs[i - 1]];
+              return edit();
+            case "down":
+              if (i < qs.length - 1) [qs[i + 1], qs[i]] = [qs[i], qs[i + 1]];
+              return edit();
+            case "addopt":
+              if (qs[i].options.length < 4) qs[i].options.push("");
+              return edit();
+            case "delopt": {
+              const q = qs[i],
+                j = +b.dataset.j;
+              q.options.splice(j, 1);
+              if (q.correct === j) q.correct = 0;
+              else if (q.correct > j) q.correct--;
+              return edit();
+            }
+            case "export":
+              return exportQuiz();
+            case "start":
+              return startGame();
+            case "begin":
+              return act("start");
+            case "skip":
+              return act("reveal");
+            case "toboard":
+              return act("board");
+            case "next":
+              return act("next");
+            case "end":
+              return act("end");
+            case "kick":
+              return act("kick", { nick: b.dataset.nick });
+            case "copy": {
+              const url = b.dataset.url;
+              const done = () => {
+                b.textContent = "Copied";
+                setTimeout(() => (b.textContent = "Copy link"), 1500);
+              };
+              if (navigator.clipboard)
+                navigator.clipboard.writeText(url).then(done, () => {});
+              return;
+            }
+            case "cancel":
+            case "back":
+              act("close");
+              H.st = null;
+              H.session = null;
+              store.del("buzzline-host", SS);
+              return renderEditor();
+          }
+        });
+
+        const RING_C = 2 * Math.PI * 52;
+        const ring = (frac, secs) =>
+          '<div class="ring" role="timer" aria-label="' +
+          secs +
+          ' seconds left"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/>' +
+          '<circle class="val" cx="60" cy="60" r="52" stroke-dasharray="' +
+          RING_C.toFixed(1) +
+          '" stroke-dashoffset="' +
+          (RING_C * (1 - frac)).toFixed(1) +
+          '"/></svg><span class="num">' +
+          secs +
+          "</span></div>";
+        function hostTick() {
+          if (!isHost || !H.st || H.st.phase !== "question") return;
+          const rem = Math.max(0, H.deadline - Date.now());
+          const r = document.querySelector(".ring");
+          if (r && H.st.q) {
+            r.querySelector(".val").setAttribute(
+              "stroke-dashoffset",
+              (RING_C * (1 - rem / (H.st.q.time * 1000))).toFixed(1),
+            );
+            r.querySelector("span").textContent = Math.ceil(rem / 1000);
+          }
+        }
+
+        function renderStage() {
+          const s = H.st,
+            n = s.n,
+            key = "host:" + s.phase + ":" + s.qi;
+          const top = (left) =>
+            '<div class="stage-top"><span class="pill">' +
+            left +
+            '</span><span class="pill num">Code <b>' +
+            s.code +
+            "</b></span></div>";
+          const endBtn =
+            '<button class="btn ghost" data-a="end">End game</button>';
+          if (s.phase === "lobby") {
+            const joinUrl = location.origin + "/?mode=play&code=" + s.code;
+            const html =
+              '<div class="stage">' +
+              top(esc(s.title)) +
+              '<div class="lobby"><div class="codebox"><div class="eyebrow">Join at</div>' +
+              '<div class="joinurl">' +
+              esc(location.host) +
+              "</div>" +
+              '<div class="eyebrow" style="margin-top:18px">Game code</div><div class="code num"><span>' +
+              s.code +
+              "</span></div>" +
+              '<div class="qr" id="qr" aria-label="QR code to join"></div>' +
+              '<p class="note" style="margin:14px 0 0">Scan the code, or open the link on your phone and enter the game code.</p>' +
+              '<button class="btn small" style="margin-top:12px" data-a="copy" data-url="' +
+              esc(joinUrl) +
+              '">Copy link</button></div>' +
+              '<div class="roster"><h2><span class="n num">' +
+              s.players.length +
+              "</span> player" +
+              (s.players.length === 1 ? "" : "s") +
+              " joined</h2>" +
+              (s.players.length
+                ? '<div class="chips">' +
+                  s.players
+                    .map(
+                      (p) =>
+                        '<span class="chip">' +
+                        esc(p.nick) +
+                        '<button data-a="kick" data-nick="' +
+                        esc(p.nick) +
+                        '" aria-label="Remove ' +
+                        esc(p.nick) +
+                        '">×</button></span>',
+                    )
+                    .join("") +
+                  "</div>"
+                : '<div class="waiting note"><span class="dots3"><i></i><i></i><i></i></span>Waiting for players to join</div>') +
+              "</div></div>" +
+              '<div class="ctrls"><button class="btn ghost" data-a="cancel">Cancel game</button><button class="btn primary" data-a="begin"' +
+              (s.players.length ? "" : " disabled") +
+              ">Start game</button></div></div>";
+            return show(html, key, () => {
+              const qr = $("qr");
+              if (qr && window.QRCode) {
+                try {
+                  new QRCode(qr, {
+                    text: joinUrl,
+                    width: 170,
+                    height: 170,
+                    colorDark: "#181818",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M,
+                  });
+                } catch (e) {
+                  qr.hidden = true;
+                }
+              } else if (qr) qr.hidden = true;
+            });
+          }
+          if (s.phase === "question" || s.phase === "reveal") {
+            const q = s.q,
+              isQ = s.phase === "question";
+            let mid;
+            if (isQ) {
+              const rem = Math.max(0, H.deadline - Date.now());
+              mid =
+                '<div class="qmid">' +
+                ring(rem / (q.time * 1000), Math.ceil(rem / 1000)) +
+                '<div class="answered"><b class="num" id="h-answered">' +
+                s.answered +
+                '</b><span class="note">of <span id="h-online">' +
+                s.online +
+                "</span> answered</span></div></div>" +
+                '<div class="cells big">' +
+                q.options.map((o, j) => cell(j, o, "")).join("") +
+                "</div>";
+            } else {
+              const max = Math.max(1, ...s.counts);
+              mid =
+                '<div class="bars" role="img" aria-label="Answer counts">' +
+                q.options
+                  .map(
+                    (o, j) =>
+                      '<div class="barcol' +
+                      (j === s.correct ? " win" : " dim") +
+                      '"><span class="cnt num">' +
+                      s.counts[j] +
+                      "</span>" +
+                      '<div class="bar" style="height:' +
+                      (10 + (s.counts[j] / max) * 80) +
+                      '%">' +
+                      SH[j] +
+                      "</div></div>",
+                  )
+                  .join("") +
+                "</div>" +
+                '<div class="cells big">' +
+                q.options
+                  .map((o, j) =>
+                    cell(j, o, j === s.correct ? "correct" : "muted"),
+                  )
+                  .join("") +
+                "</div>";
+            }
+            const html =
+              '<div class="stage">' +
+              top("Question <b>" + (s.qi + 1) + "</b> of " + n) +
+              '<div class="qbig">' +
+              esc(q.text) +
+              "</div>" +
+              mid +
+              '<div class="ctrls">' +
+              endBtn +
+              (isQ
+                ? '<button class="btn" data-a="skip">Stop timer &amp; reveal</button>'
+                : '<button class="btn primary" data-a="toboard">Leaderboard</button>') +
+              "</div></div>";
+            return show(html, key);
+          }
+          if (s.phase === "board") {
+            const r = s.players.slice(0, 5),
+              last = s.qi + 1 >= n;
+            const html =
+              '<div class="stage">' +
+              top("After question <b>" + (s.qi + 1) + "</b> of " + n) +
+              '<h1 class="center" style="font-size:clamp(34px,4vw,52px)">Leaderboard</h1>' +
+              '<div class="board">' +
+              (r.length
+                ? r
+                    .map(
+                      (p, i) =>
+                        '<div class="brow' +
+                        (i === 0 ? " top" : "") +
+                        '" style="animation-delay:' +
+                        i * 60 +
+                        'ms"><span class="rk num">' +
+                        p.rank +
+                        '</span><span class="nm">' +
+                        esc(p.nick) +
+                        (p.gained
+                          ? '<span class="gain num">+' + p.gained + "</span>"
+                          : "") +
+                        '</span><span class="sc num">' +
+                        p.score +
+                        "</span></div>",
+                    )
+                    .join("")
+                : '<p class="note center">No players.</p>') +
+              "</div>" +
+              '<div class="ctrls">' +
+              endBtn +
+              '<button class="btn primary" data-a="next">' +
+              (last ? "Final results" : "Next question") +
+              "</button></div></div>";
+            return show(html, key);
+          }
+          // final podium
+          const r = s.players,
+            slots = [
+              [r[1], "p2", 2],
+              [r[0], "p1", 1],
+              [r[2], "p3", 3],
+            ];
+          const html =
+            '<div class="stage">' +
+            top(esc(s.title)) +
+            '<h1 class="center" style="font-size:clamp(34px,4vw,56px)">Final podium</h1>' +
+            '<div class="podium">' +
+            slots
+              .map(([p, c, k]) =>
+                p
+                  ? '<div class="pod ' +
+                    c +
+                    '"><div class="who">' +
+                    esc(p.nick) +
+                    '</div><div class="pts num">' +
+                    p.score +
+                    ' pts</div><div class="block">' +
+                    k +
+                    "</div></div>"
+                  : "",
+              )
+              .join("") +
+            "</div>" +
+            (r.length > 3
+              ? '<div class="rest">' +
+                r
+                  .slice(3, 12)
+                  .map(
+                    (p) =>
+                      '<div class="brow"><span class="rk num">' +
+                      p.rank +
+                      '</span><span class="nm">' +
+                      esc(p.nick) +
+                      '</span><span class="sc num">' +
+                      p.score +
+                      "</span></div>",
+                  )
+                  .join("") +
+                "</div>"
+              : "") +
+            (r.length ? "" : '<p class="note center">No players joined.</p>') +
+            '<div class="ctrls"><button class="btn primary" data-a="back">Back to quiz editor</button></div></div>';
+          show(html, key);
+        }
+
+        /* =====================================================================
+     PLAYER
+     ===================================================================== */
+        let pid = store.get("buzzline-pid", "");
+        if (!pid) {
+          pid =
+            window.crypto && crypto.randomUUID
+              ? crypto.randomUUID()
+              : Math.random().toString(36).slice(2) + Date.now().toString(36);
+          store.set("buzzline-pid", pid);
+        }
+        const urlCode = (new URLSearchParams(location.search).get("code") || "")
+          .replace(/\D/g, "")
+          .slice(0, 6);
+        const P = {
+          view: "join",
+          code: urlCode,
+          nick: store.get("buzzline-nick", ""),
+          err: "",
+          st: null,
+          deadline: 0,
+          picked: null,
+          joining: false,
+          session: store.get("buzzline-play", null, SS),
+        };
+
+        function playerOnConnect() {
+          if (P.session) {
+            socket.emit(
+              "player:join",
+              { code: P.session.code, nick: P.session.nick, pid },
+              (r) => {
+                if (!r || !r.ok) {
+                  P.session = null;
+                  store.del("buzzline-play", SS);
+                  P.view = "join";
+                  P.err = (r && r.err) || "";
+                  renderPlay();
+                }
+              },
+            );
+          }
+        }
+        function joinGame() {
+          if (P.joining) return;
+          P.code = $("pcode").value.replace(/\D/g, "");
+          P.nick = $("pnick").value.replace(/\s+/g, " ").trim().slice(0, 20);
+          P.err = "";
+          if (P.code.length !== 6) {
+            P.err = "Enter the 6-digit code shown on the big screen.";
+            return renderPlay();
+          }
+          if (!P.nick) {
+            P.err = "Pick a nickname.";
+            return renderPlay();
+          }
+          if (!socket.connected) {
+            P.err = "Connecting to the game server… try again in a moment.";
+            return renderPlay();
+          }
+          P.joining = true;
+          renderPlay();
+          socket.emit(
+            "player:join",
+            { code: P.code, nick: P.nick, pid },
+            (r) => {
+              P.joining = false;
+              if (!r || !r.ok) {
+                P.err = (r && r.err) || "Could not join.";
+                return renderPlay();
+              }
+              P.nick = r.nick;
+              store.set("buzzline-nick", P.nick);
+              P.session = { code: P.code, nick: P.nick };
+              store.set("buzzline-play", P.session, SS);
+              if (P.view === "join") {
+                P.view = "game";
+                renderPlay();
+              }
+            },
+          );
+        }
+        function leaveGame() {
+          socket.emit("player:leave");
+          P.session = null;
+          store.del("buzzline-play", SS);
+          P.st = null;
+          P.view = "join";
+          P.err = "";
+          P.code = "";
+          renderPlay();
+        }
+        socket.on("game:state", (s) => {
+          if (isHost) return;
+          const prev = P.st;
+          P.st = s;
+          P.view = "game";
+          if (s.phase === "question") P.deadline = Date.now() + (s.rem || 0);
+          if (!prev || prev.qi !== s.qi) P.picked = null;
+          if (s.me && s.me.picked != null && P.picked == null)
+            P.picked = s.me.picked;
+          // Same question still open: update in place so the answer pad (and its fade) isn't rebuilt.
+          if (
+            prev &&
+            prev.phase === "question" &&
+            s.phase === "question" &&
+            prev.qi === s.qi
+          ) {
+            const y = $("p-score");
+            if (y) y.textContent = s.me.score + " pts";
+            if (P.picked != null) lockPad(P.picked, false);
+            return;
+          }
+          renderPlay();
+        });
+        socket.on("game:closed", (d) => {
+          if (isHost) return;
+          const why = {
+            closed: "The host closed the game.",
+            expired: "The game expired.",
+            removed: "The host removed you from the game.",
+            elsewhere: "You joined this game from another tab or device.",
+          };
+          P.session = null;
+          store.del("buzzline-play", SS);
+          P.st = null;
+          P.view = "join";
+          P.err = why[d && d.reason] || "The game ended.";
+          renderPlay();
+        });
+        // Lock the pad in place: chosen cell turns selected, the rest mute, all disable.
+        function lockPad(choice, animate) {
+          const cells = app.querySelectorAll(".play .cells .cell");
+          if (!cells.length) return;
+          cells.forEach((c) => {
+            const j = +c.dataset.c;
+            c.disabled = true;
+            if (choice == null) {
+              c.classList.add("muted");
+              return;
+            }
+            const isSel = j === choice;
+            if (isSel && !c.classList.contains("selected")) {
+              c.classList.add("selected");
+              if (animate && !reduceMotion()) {
+                c.classList.remove("tap");
+                void c.offsetWidth;
+                c.classList.add("tap");
+              }
+            }
+            if (!isSel) c.classList.add("muted");
+          });
+          const m = $("p-lock");
+          if (m)
+            m.textContent =
+              choice == null
+                ? "Time's up"
+                : "Answer locked in. Watch the big screen.";
+        }
+        function pick(c) {
+          const s = P.st;
+          if (
+            !s ||
+            s.phase !== "question" ||
+            P.picked != null ||
+            Date.now() > P.deadline
+          )
+            return;
+          P.picked = c;
+          try {
+            navigator.vibrate && navigator.vibrate(30);
+          } catch (e) {}
+          socket.emit("player:answer", { qi: s.qi, c });
+          lockPad(c, true);
+        }
+
+        function renderPlay() {
+          if (P.view === "join") {
+            const html =
+              '<div class="play"><form class="join" id="joinform" novalidate><h1>Join the quiz</h1>' +
+              '<p class="note lede">Enter the code from the big screen.</p>' +
+              '<label for="pcode">Game code</label>' +
+              '<input id="pcode" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="000000" value="' +
+              esc(P.code) +
+              '">' +
+              '<label for="pnick">Your nickname</label>' +
+              '<input id="pnick" autocomplete="off" maxlength="20" placeholder="Nickname" value="' +
+              esc(P.nick) +
+              '">' +
+              (P.err
+                ? '<p class="err center" style="margin:4px 0 0" role="alert">' +
+                  esc(P.err) +
+                  "</p>"
+                : "") +
+              '<button class="btn primary" type="submit"' +
+              (P.joining ? " disabled" : "") +
+              ">" +
+              (P.joining ? "Joining…" : "Join game") +
+              "</button></form>" +
+              '<p class="footlink">Running the quiz? <a href="/index.html?mode=host">Host a game</a></p></div>';
+            return show(html, "join", () => {
+              $("joinform").onsubmit = (ev) => {
+                ev.preventDefault();
+                joinGame();
+              };
+              $("pcode").oninput = (e) => {
+                e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+              };
+              if (!P.joining)
+                (P.code.length === 6 ? $("pnick") : $("pcode")).focus({
+                  preventScroll: true,
+                });
+            });
+          }
+          const s = P.st;
+          if (!s)
+            return show(
+              '<div class="play"><div class="pstatus"><span class="dots3"><i></i><i></i><i></i></span><h2>Joining…</h2></div></div>',
+              "joining",
+            );
+          const me = s.me,
+            key = "play:" + s.phase + ":" + s.qi;
+          const you =
+            '<div class="youbar"><span>' +
+            esc(me.nick) +
+            '</span><span class="sc num" id="p-score">' +
+            me.score +
+            " pts</span></div>";
+          if (s.phase === "lobby") {
+            return show(
+              '<div class="play"><div class="pstatus"><div class="eyebrow">You\'re in</div><div class="big">' +
+                esc(me.nick) +
+                "</div>" +
+                '<p class="note" style="font-size:17px;max-width:34ch">Look for your name on the big screen. The quiz starts when the host is ready.</p>' +
+                '<div class="waiting note"><span class="dots3"><i></i><i></i><i></i></span><span class="num">' +
+                s.np +
+                " player" +
+                (s.np === 1 ? "" : "s") +
+                " joined</span></div></div>" +
+                '<button class="btn ghost" id="pleave">Leave game</button></div>',
+              key,
+              () => {
+                $("pleave").onclick = leaveGame;
+              },
+            );
+          }
+          if (s.phase === "question") {
+            const q = s.q,
+              rem = Math.max(0, P.deadline - Date.now()),
+              over = rem <= 0,
+              picked = P.picked,
+              locked = picked != null || over;
+            const html =
+              '<div class="play"><div class="phead"><span>Question ' +
+              (s.qi + 1) +
+              " of " +
+              s.n +
+              '</span><span class="t num" id="psec">' +
+              Math.ceil(rem / 1000) +
+              "s</span></div>" +
+              '<div class="ptimer" aria-hidden="true"><i id="pbar" style="width:' +
+              (rem / (q.time * 1000)) * 100 +
+              '%"></i></div>' +
+              '<div class="pq">' +
+              esc(q.text) +
+              "</div>" +
+              '<p class="lockmsg" id="p-lock" role="status">' +
+              (picked != null
+                ? "Answer locked in. Watch the big screen."
+                : over
+                  ? "Time's up"
+                  : "Tap your answer") +
+              "</p>" +
+              '<div class="cells">' +
+              q.options
+                .map((o, j) =>
+                  cell(
+                    j,
+                    o,
+                    picked === j ? "selected" : locked ? "muted" : "",
+                    true,
+                    locked,
+                  ),
+                )
+                .join("") +
+              "</div>" +
+              you +
+              "</div>";
+            return show(html, key, () =>
+              app
+                .querySelectorAll(".play .cells .cell")
+                .forEach((b) => (b.onclick = () => pick(+b.dataset.c))),
+            );
+          }
+          if (s.phase === "reveal" || s.phase === "board") {
+            const last = me.last && me.last.qi === s.qi ? me.last : null;
+            const f = last ? (last.correct ? 1 : last.answered ? 0 : -1) : -1;
+            const head =
+              f === 1
+                ? ["ok", ICON.check, "Correct!"]
+                : f === 0
+                  ? ["bad", ICON.cross, "Not this time"]
+                  : ["none", ICON.dash, "No answer"];
+            const cells = s.q.options
+              .map((o, j) =>
+                cell(
+                  j,
+                  o,
+                  j === s.correct
+                    ? "correct"
+                    : j === P.picked
+                      ? "incorrect"
+                      : "muted",
+                ),
+              )
+              .join("");
+            return show(
+              '<div class="play"><div class="pstatus" style="flex:0;padding-bottom:4px"><div class="badge ' +
+                head[0] +
+                '">' +
+                head[1] +
+                "</div><h2>" +
+                head[2] +
+                "</h2></div>" +
+                '<div class="result-meta"><div><b class="num">+' +
+                (last ? last.pts : 0) +
+                "</b><span>points this question</span></div>" +
+                '<div><b class="num">' +
+                ord(me.rank) +
+                "</b><span>place of " +
+                s.np +
+                "</span></div></div>" +
+                '<div class="cells">' +
+                cells +
+                "</div>" +
+                you +
+                "</div>",
+              key,
+            );
+          }
+          // final
+          const rk = me.rank <= 3 ? " r" + me.rank : "";
+          show(
+            '<div class="play"><div class="pstatus"><div class="eyebrow">Game over</div>' +
+              '<div class="badge rank' +
+              rk +
+              '">' +
+              me.rank +
+              "</div>" +
+              "<h2>" +
+              (me.rank <= 3
+                ? "You made the podium!"
+                : "You finished " + ord(me.rank)) +
+              '</h2><div class="big num">' +
+              me.score +
+              "</div>" +
+              '<p class="note" style="margin:0">points · ' +
+              ord(me.rank) +
+              " of " +
+              s.np +
+              "</p>" +
+              (s.top && s.top.length
+                ? '<p class="note">Winner: <b>' +
+                  esc(s.top[0].nick) +
+                  "</b></p>"
+                : "") +
+              '</div><button class="btn primary" id="pleave">Play another game</button></div>',
+            key,
+            () => {
+              $("pleave").onclick = leaveGame;
+            },
+          );
+        }
+        setInterval(() => {
+          if (isHost || P.view !== "game" || !P.st || P.st.phase !== "question")
+            return;
+          const rem = Math.max(0, P.deadline - Date.now()),
+            sec = $("psec"),
+            bar = $("pbar");
+          if (sec) sec.textContent = Math.ceil(rem / 1000) + "s";
+          if (bar) bar.style.width = (rem / (P.st.q.time * 1000)) * 100 + "%";
+          if (
+            rem <= 0 &&
+            P.picked == null &&
+            app.querySelector(".play .cells .cell:not(:disabled)")
+          )
+            lockPad(null, false);
+        }, 200);
+
+        /* ---------------- boot ---------------- */
+        if (isHost) hostInit();
+        else {
+          if (P.session) P.view = "game";
+          renderPlay();
+        }
+      })();
+    </script>
+  </body>
+</html>

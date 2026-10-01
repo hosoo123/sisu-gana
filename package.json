@@ -1,0 +1,29 @@
+{
+  "name": "sisu-live-quiz",
+  "version": "1.0.0",
+  "description": "Live multiplayer quiz game. Host on a big screen, players join from their phones with a code.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "next build",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.18"
+  },
+  "dependencies": {
+    "next": "^15.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.7",
+    "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "postcss": "^8.5.23"
+  }
+}
