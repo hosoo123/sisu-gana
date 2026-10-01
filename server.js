@@ -415,7 +415,10 @@ io.on("connection", (socket) => {
 app.prepare().then(() => {
   const listen = (port) => {
     const onError = (error) => {
-      if (error.code === "EADDRINUSE" && process.env.NODE_ENV !== "production") {
+      if (
+        error.code === "EADDRINUSE" &&
+        process.env.NODE_ENV !== "production"
+      ) {
         const nextPort = Number(port) + 1;
         console.warn(`Port ${port} is already in use; trying ${nextPort}.`);
         return listen(nextPort);
@@ -425,7 +428,8 @@ app.prepare().then(() => {
     server.once("error", onError);
     server.listen(port, () => {
       const address = server.address();
-      const activePort = address && typeof address === "object" ? address.port : port;
+      const activePort =
+        address && typeof address === "object" ? address.port : port;
       console.log(`SISU Live Quiz running on http://localhost:${activePort}`);
       console.log(`  Players:  http://localhost:${activePort}/`);
       console.log(`  Host:     http://localhost:${activePort}/host`);
