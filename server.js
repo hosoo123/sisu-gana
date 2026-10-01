@@ -68,6 +68,7 @@ function validateQuiz(raw) {
       .map((o) => clean(o, 60));
     return {
       text: clean(q.text, 160),
+      explanation: clean(q.explanation, 500),
       options,
       correct: Number.isInteger(q.correct) ? q.correct : -1,
       time: TIMES.includes(q.time) ? q.time : 20,
@@ -133,6 +134,7 @@ function publicState(g) {
     } else {
       s.counts = g.counts;
       s.correct = q.correct;
+      s.q.explanation = q.explanation;
     }
   }
   s.top = ranked(g)

@@ -556,6 +556,27 @@
         border-color: var(--ink);
         background: #fff;
       }
+      .field.explanation {
+        min-height: 96px;
+        font-size: 15px;
+        font-weight: 400;
+        resize: vertical;
+      }
+      .answer-explanation {
+        border-left: 4px solid var(--yellow);
+        border-radius: var(--r-sm);
+        background: var(--yellow-soft);
+        padding: 14px 18px;
+      }
+      .answer-explanation h2 {
+        margin-bottom: 4px;
+        font-size: 17px;
+      }
+      .answer-explanation p {
+        margin: 0;
+        color: var(--ink-2);
+        overflow-wrap: anywhere;
+      }
       .opts {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1662,6 +1683,7 @@
             questions: d.questions.slice(0, 100).map((q) => ({
               id: nid(),
               text: String(q.text || "").slice(0, 160),
+              explanation: String(q.explanation || "").slice(0, 500),
               options: (Array.isArray(q.options) && q.options.length >= 2
                 ? q.options
                 : ["", ""]
@@ -1853,6 +1875,11 @@
                 '" aria-label="Question ' +
                 (i + 1) +
                 '">' +
+                '<textarea class="field explanation" data-i="' +
+                i +
+                '" data-k="explanation" maxlength="500" placeholder="Explain the correct answer" aria-label="Answer explanation">' +
+                esc(q.explanation) +
+                "</textarea>" +
                 '<div class="opts">' +
                 opts +
                 "</div>" +
@@ -1937,8 +1964,9 @@
           const data = {
             title: H.quiz.title,
             questions: H.quiz.questions.map(
-              ({ text, options, correct, time }) => ({
+              ({ text, explanation, options, correct, time }) => ({
                 text,
+                explanation,
                 options,
                 correct,
                 time,
@@ -2017,6 +2045,8 @@
             i = +t.dataset.i;
           if (k === "title") H.quiz.title = t.value.slice(0, 80);
           else if (k === "text") H.quiz.questions[i].text = t.value;
+          else if (k === "explanation")
+            H.quiz.questions[i].explanation = t.value.slice(0, 500);
           else if (k === "opt")
             H.quiz.questions[i].options[+t.dataset.j] = t.value;
           else return;
@@ -2053,6 +2083,7 @@
               qs.push({
                 id: nid(),
                 text: "",
+                explanation: "",
                 options: ["", "", "", ""],
                 correct: 0,
                 time: 20,
