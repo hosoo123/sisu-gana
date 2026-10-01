@@ -18,8 +18,10 @@ This uses [Render](https://render.com). Any Node.js host works the same way (Rai
    - **Build command:** `npm install && npm run build`
    - **Start command:** `npm start`
    - **Instance type:** Free
-4. (Optional) Under **Environment**, add `HOST_PIN` with a PIN of your choice. Then only people who know the PIN can host games. Players never need it.
+4. Under **Environment**, add `HOST_ACCESS_PASSWORD` with a strong password. The `/host` page and host mode require browser authentication (`host` as the username). Players do not need it. Optionally set `HOST_PIN` to a separate game-creation PIN.
 5. Click **Create Web Service**. After a minute or two Render gives you an address like `https://buzzline-xxxx.onrender.com`. Share it with players.
+
+If the frontend is also deployed to Vercel, add the same `HOST_ACCESS_PASSWORD` under that project's **Settings → Environment Variables** and redeploy. Without it, production host routes return `503`; player routes remain public.
 
 Free Render services go to sleep after a period of no visitors. Open the host page a minute before you start so it's awake when players arrive.
 

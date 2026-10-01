@@ -9,6 +9,7 @@ const { Server } = require("socket.io");
 
 const PORT = process.env.PORT || 3000;
 const HOST_PIN = (process.env.HOST_PIN || "").trim(); // optional: require a PIN to host
+const HOST_ACCESS_PASSWORD = (process.env.HOST_ACCESS_PASSWORD || "").trim();
 const TIMES = [5, 10, 15, 20, 30, 45, 60, 90, 120];
 const GRACE_MS = 600; // network allowance after the timer hits zero
 
@@ -221,7 +222,10 @@ io.on("connection", (socket) => {
   /* ---- host ---- */
   socket.on("host:create", (data, cb) => {
     data = data || {};
-    if (HOST_PIN && String(data.pin || "") !== HOST_PIN)
+    const requiredPin = HOST_PIN || HOST_ACCESS_PASSWORD;
+    if (!requiredPin && process.env.NODE_ENV === "production")
+      return ack(cb, { ok: false, err: "Host access is not configured." });
+    if (requiredPin && String(data.pin || "") !== requiredPin)
       return ack(cb, { ok: false, err: "pin" });
     const quiz = validateQuiz(data.quiz);
     if (!quiz)
