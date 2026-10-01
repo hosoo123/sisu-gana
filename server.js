@@ -8,10 +8,8 @@ const next = require("next");
 const { Server } = require("socket.io");
 
 const PORT = process.env.PORT || 3000;
-const HOST_PIN = (process.env.HOST_PIN || "0224").trim(); // optional: require a PIN to host
-const HOST_ACCESS_PASSWORD = (
-  process.env.HOST_ACCESS_PASSWORD || "0224"
-).trim();
+const HOST_PIN = (process.env.HOST_PIN || "").trim(); // optional: require a PIN to host
+const HOST_ACCESS_PASSWORD = (process.env.HOST_ACCESS_PASSWORD || "").trim();
 const HOST_SESSION_COOKIE = "sisu-host-auth";
 const TIMES = [5, 10, 15, 20, 30, 45, 60, 90, 120];
 const GRACE_MS = 600; // network allowance after the timer hits zero
