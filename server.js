@@ -8,8 +8,11 @@ const next = require("next");
 const { Server } = require("socket.io");
 
 const PORT = process.env.PORT || 3000;
-const HOST_PIN = (process.env.HOST_PIN || "").trim(); // optional: require a PIN to host
-const HOST_ACCESS_PASSWORD = (process.env.HOST_ACCESS_PASSWORD || "").trim();
+const HOST_PIN = (process.env.HOST_PIN || "0224").trim(); // optional: require a PIN to host
+const HOST_ACCESS_PASSWORD = (
+  process.env.HOST_ACCESS_PASSWORD || "0224"
+).trim();
+const HOST_SESSION_COOKIE = "sisu-host-auth";
 const TIMES = [5, 10, 15, 20, 30, 45, 60, 90, 120];
 const GRACE_MS = 600; // network allowance after the timer hits zero
 
@@ -24,6 +27,33 @@ const io = new Server(server, {
 
 /* ---------------- helpers ---------------- */
 const games = new Map(); // code -> game
+
+function hasHostSession(cookieHeader) {
+  if (!HOST_ACCESS_PASSWORD || !cookieHeader) return false;
+  const cookie = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(HOST_SESSION_COOKIE + "="));
+  if (!cookie) return false;
+
+  const token = cookie.slice(HOST_SESSION_COOKIE.length + 1);
+  const separator = token.indexOf(".");
+  if (separator < 1) return false;
+  const expires = token.slice(0, separator);
+  const signature = token.slice(separator + 1);
+  if (!/^\d+$/.test(expires) || Number(expires) <= Date.now()) return false;
+
+  const expected = crypto
+    .createHmac("sha256", HOST_ACCESS_PASSWORD)
+    .update(expires)
+    .digest("base64url");
+  const expectedBytes = Buffer.from(expected);
+  const signatureBytes = Buffer.from(signature);
+  return (
+    expectedBytes.length === signatureBytes.length &&
+    crypto.timingSafeEqual(expectedBytes, signatureBytes)
+  );
+}
 
 const clean = (s, max) =>
   String(s == null ? "" : s)
@@ -212,6 +242,7 @@ setInterval(() => {
 io.on("connection", (socket) => {
   let hosting = null; // game this socket hosts
   let playing = null; // { g, pid }
+  const hostAuthenticated = hasHostSession(socket.handshake.headers.cookie);
 
   const ack = (cb, v) => {
     if (typeof cb === "function") cb(v);
@@ -222,10 +253,11 @@ io.on("connection", (socket) => {
   /* ---- host ---- */
   socket.on("host:create", (data, cb) => {
     data = data || {};
-    const requiredPin = HOST_PIN || HOST_ACCESS_PASSWORD;
-    if (!requiredPin && process.env.NODE_ENV === "production")
+    if (process.env.NODE_ENV === "production" && !HOST_ACCESS_PASSWORD)
       return ack(cb, { ok: false, err: "Host access is not configured." });
-    if (requiredPin && String(data.pin || "") !== requiredPin)
+    if (HOST_ACCESS_PASSWORD && !hostAuthenticated)
+      return ack(cb, { ok: false, err: "Host authentication required." });
+    if (HOST_PIN && String(data.pin || "") !== HOST_PIN)
       return ack(cb, { ok: false, err: "pin" });
     const quiz = validateQuiz(data.quiz);
     if (!quiz)
